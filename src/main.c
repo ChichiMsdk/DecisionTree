@@ -40,7 +40,7 @@ allocate_struct(data_set ds)
 }
 
 data_set
-load_csv(const char *fname)
+load_dataset_csv(const char *fname)
 {
 	data_set ds;
 
@@ -74,6 +74,17 @@ load_csv(const char *fname)
 	return ds;
 }
 
+void
+CM_destroy_dataset(data_set ds)
+{
+	int i = 0;
+	while (i < 5)
+	{
+		free(ds.fields[i].entries);
+		i++;
+	}
+}
+
 int
 main(int ac, char *av[])
 {
@@ -82,6 +93,7 @@ main(int ac, char *av[])
 		fprintf(stderr, "Usage: \"./tree <file.csv>\"\n");
 		return 1;
 	}
-	data_set ds = load_csv(av[1]);
+	data_set ds = load_dataset_csv(av[1]);
+	CM_destroy_dataset(ds);
 	return 0;
 }
