@@ -1,7 +1,7 @@
 #ifndef CSV_H
 #define CSV_H
 
-#include <stdio.h>
+#include "cm_error.h"
 
 #define HEADER_MAX 120
 
@@ -17,5 +17,12 @@ typedef struct data_set
 	FILE	*file;
 	size_t	lines;
 }data_set;
+
+
+int			count_lines_with_numbers(FILE *file);
+data_set	allocate_struct(data_set ds);
+data_set	load_dataset_csv(const char *fname);
+void		CM_destroy_dataset(data_set ds);
+
 
 #endif
