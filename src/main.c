@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "cm_error.h"
 
 int
 main(int ac, char *av[])
@@ -8,5 +8,6 @@ main(int ac, char *av[])
 		fprintf(stderr, "Usage: \"./tree <file.csv>\"\n");
 		return 1;
 	}
+	CMERR();
 	return 0;
 }
