@@ -1,0 +1,58 @@
+NAME = tree
+EXTENSION =
+OUTPUT = $(NAME)$(EXTENSION)
+SRC_DIR = src
+BUILD_DIR = build
+OBJ_DIR = build/obj
+CC = gcc
+CPP = g++
+# SRC_GUI_DIR = src/gui
+
+INCLUDE_DIRS =-Iinclude
+
+LIBS =
+
+LIB_PATH =
+CFLAGS = -fsanitize=address -DWIN_32 -DTRACY_ENABLE
+# CFLAGS = -DWIN_32 -DTRACY_ENABLE
+
+CFLAGS += -g -O0
+CPPFLAGS = -DTRACY_ENABLE
+
+# FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_GUI_DIR)/*.c)
+# OBJS := $(patsubst $(OBJ_DIR)/gui/%.o, $(OBJ_DIR)/%.o, $(OBJS))
+
+FILES = $(wildcard $(SRC_DIR)/*.c)
+CPP_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(FILES))
+CPP_OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_FILES))
+
+gcc: $(OBJ_DIR) $(BUILD_DIR)/$(OUTPUT)
+
+$(BUILD_DIR)/$(OUTPUT): $(OBJS) $(CPP_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLUDE_DIRS) $(LIB_PATH) $(LIBS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	-$(CPP) $(CPPFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+
+$(OBJ_DIR)/%.o: $(SRC_GUI_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
+
+$(OBJ_DIR): $(BUILD_DIR)
+	@mkdir -p build/obj
+
+$(BUILD_DIR):
+	@mkdir -p build
+
+clean:
+	@echo Deleting files..
+	rm -f $(BUILD_DIR)/$(NAME)$(EXTENSION)
+	rm -f $(BUILD_DIR)/*.obj
+	rm -f $(BUILD_DIR)/obj/*.o
+
+re: clean all
+
+.PHONY: gcc all clean re

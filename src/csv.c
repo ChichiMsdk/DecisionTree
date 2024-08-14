@@ -66,7 +66,7 @@ load_dataset_csv(const char *fname)
 				ds.fields[2].entries[i], ds.fields[3].entries[i], ds.fields[4].entries[i]);
 		i++;
 	}
-	printf("size:%llu\n", ds.lines);
+	printf("size:%zu\n", ds.lines);
 	fclose(file);
 	return ds;
 }
