@@ -49,7 +49,7 @@ load_dataset_csv(const char *fname)
 	ds = allocate_struct(ds);
 	rewind(file);
 	fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^\n]", ds.fields[0].header, ds.fields[1].header, 
-			ds.fields[2].header, ds.fields[3].header,  ds.fields[4].header);  
+			ds.fields[2].header, ds.fields[3].header, ds.fields[4].header);  
 	int i = 0;
 	while (i < 5)
 	{
