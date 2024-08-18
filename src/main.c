@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <string.h> // strcmp()
+#include <math.h> // fmod()
 
 
 #ifdef WIN_32
@@ -104,11 +105,14 @@ fill_head(Node **node, size_t size)
 	(*node)->array_size = i;
 }
 
-inline int get_random_condition(data_set ds, int feature, Node *node);
+inline float get_random_condition(data_set ds, int feature, Node *node);
 
 void
 separate_nodes(Node **node)
 {
+	static int depth = 0;
+	if (depth >= 5 || (*node)->array_size <= 1)
+		return ;
 	/*
 	 * todo: check if we should separate them size > 1 -> needed for recursive way
 	 *
@@ -147,7 +151,7 @@ separate_nodes(Node **node)
 
 	// need to fmodulo type of function since float % float is not possible #shittyC
 	// so the random_condition is an int
-	int random_condition = get_random_condition(g_ds, rfeat, c_node);
+	float random_condition = get_random_condition(g_ds, rfeat, c_node);
 
 	size_t i = 0;
 	size_t j = 0;
@@ -155,9 +159,9 @@ separate_nodes(Node **node)
 	int *r_indexarray = right_node->indexarray;
 	const int *c_indexarray = c_node->indexarray;
 
-	printf("random_conditon %d\n", random_condition);
+	printf("random_conditon %f\n", random_condition);
 	printf("random_feat %d\n", rfeat);
-	printf("cnode->array_size: %llu\n", c_node->array_size);
+	/* printf("cnode->array_size: %llu\n", c_node->array_size); */
 
 	// right node >= condition && left node <= condition
 	while (i < c_node->array_size)
@@ -192,6 +196,8 @@ separate_nodes(Node **node)
 	right_node->array_size = j;
 	// should not be needed
 	right_node->indexarray = r_indexarray;
+	depth++;
+	separate_nodes(&right_node);
 
 	/*
 	 * This could be optimized further by simply allocating the same amount
@@ -208,7 +214,6 @@ separate_nodes(Node **node)
 	// repeat lol
 	i = 0;
 	j = 0;
-	float *left_content = left_node->content;
 	while (i < c_node->array_size && j < left_node->array_size)
 	{
 		// left is >= && left is <
@@ -241,18 +246,22 @@ separate_nodes(Node **node)
 	// should not be needed
 	left_node->indexarray = l_indexarray;
 	printf("lnode: %zu\t rnode: %llu\n", j, right_node->array_size);
+	depth++;
+	separate_nodes(&left_node);
 }
 
 /*
  * Requires node->max_val and min to be set
  */
-inline int
+inline float
 get_random_condition(data_set ds, int feature, Node *node)
 {
-	int random_condition = ds.fields[feature].entries[node->index_minvalue] +
-		rand() % (int)
-		(ds.fields[feature].entries[node->index_minvalue] 
-		 - ds.fields[feature].entries[node->index_minvalue] + 1);
+	float f1 = ds.fields[feature].entries[node->index_minvalue];
+	// %
+	float f2 = (ds.fields[feature].entries[node->index_maxvalue] 
+			- ds.fields[feature].entries[node->index_minvalue] + 1);
+
+	int random_condition = fmodf(rand(), f2) + f1;
 
 	return random_condition;
 }

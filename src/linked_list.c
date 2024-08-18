@@ -16,11 +16,13 @@ add_node(Node **node, DIRECTION direction)
 
 	if (direction == RIGHT)
 	{
-		printf("%d: %pu\n", RIGHT, (*node)->right = new_node);
+		/* printf("%d: %pu\n", RIGHT, (*node)->right = new_node); */
+		(*node)->right = new_node;
 	}
 	else
 	{
-		printf("%d: %pu\n", LEFT, (*node)->left = new_node);
+		/* printf("%d: %pu\n", LEFT, (*node)->left = new_node); */
+		(*node)->left = new_node;
 	}
 }
 
