@@ -1,5 +1,20 @@
 #include "csv.h"
 
+void
+ds_get_min_max_value(int *max, int *min, fields *field)
+{
+	int i = 0;
+	*max = field->entries[0];
+	*min = *max;
+	while (i < field->nb_entries)
+	{
+		if (field->entries[i] >= *max)
+			*max = field->entries[i];
+		else if (field->entries[i] <= *min)
+			*min = field->entries[i];
+		i++;
+	}
+}
 
 void
 ds_get_min_max_valuef(float *max, float *min, fields *field)
