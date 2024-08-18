@@ -9,6 +9,10 @@ typedef struct fields
 {
 	char	header[HEADER_MAX];
 	float	*entries;
+	size_t	nb_entries;
+
+	float	max_value;
+	float	min_value;
 }fields;
 
 typedef struct data_set
@@ -18,9 +22,10 @@ typedef struct data_set
 	size_t	lines;
 }data_set;
 
+void		get_min_max_valuef(float *max, float *min, fields *field);
 int			count_lines_with_numbers(FILE *file);
 data_set	allocate_struct(data_set ds);
 data_set	load_dataset_csv(const char *fname);
-void		CM_destroy_dataset(data_set ds);
+void		destroy_dataset(data_set ds);
 
 #endif

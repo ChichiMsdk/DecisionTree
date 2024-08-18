@@ -1,5 +1,22 @@
 #include "csv.h"
 
+
+void
+get_min_max_valuef(float *max, float *min, fields *field)
+{
+	int i = 0;
+	*max = field->entries[0];
+	*min = *max;
+	while (i < field->nb_entries)
+	{
+		if (field->entries[i] >= *max)
+			*max = field->entries[i];
+		else if (field->entries[i] <= *min)
+			*min = field->entries[i];
+		i++;
+	}
+}
+
 int
 count_lines_with_numbers(FILE *file)
 {
@@ -31,6 +48,7 @@ allocate_struct(data_set ds)
 	while (i < 5)
 	{
 		ds.fields[i].entries = malloc(sizeof(float) * size);
+		ds.fields[i].nb_entries = size;
 		i++;
 	}
 	return ds;
@@ -51,28 +69,18 @@ load_dataset_csv(const char *fname)
 	fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^\n]", ds.fields[0].header, ds.fields[1].header, 
 			ds.fields[2].header, ds.fields[3].header, ds.fields[4].header);  
 	int i = 0;
-	while (i < 5)
-	{
-		printf("header[%d]: %s\n", i, ds.fields[i].header);
-		i++;
-	}
-	i = 0;
-	printf("second scanf\n");
 	while ((fscanf(file, "%f,%f,%f,%f,%f", &ds.fields[0].entries[i], &ds.fields[1].entries[i],
 				&ds.fields[2].entries[i], &ds.fields[3].entries[i], &ds.fields[4].entries[i]) >= 5))
 	{
 
-		printf("[%d]\t %f, %f, %f, %f, %f\n", i, ds.fields[0].entries[i], ds.fields[1].entries[i],
-				ds.fields[2].entries[i], ds.fields[3].entries[i], ds.fields[4].entries[i]);
 		i++;
 	}
-	printf("size:%zu\n", ds.lines);
 	fclose(file);
 	return ds;
 }
 
 void
-CM_destroy_dataset(data_set ds)
+destroy_dataset(data_set ds)
 {
 	int i = 0;
 	while (i < 5)
