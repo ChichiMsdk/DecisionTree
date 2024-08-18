@@ -11,6 +11,9 @@ typedef struct fields
 	float	*entries;
 	size_t	nb_entries;
 
+	int		index_maxvalue;
+	int		index_minvalue;
+
 	float	max_value;
 	float	min_value;
 }fields;

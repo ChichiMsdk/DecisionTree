@@ -32,6 +32,22 @@ ds_get_min_max_valuef(float *max, float *min, fields *field)
 	}
 }
 
+void
+ds_get_min_max_index(int *max, int *min, fields *field)
+{
+	int i = 0;
+	*max = 0;
+	*min = *max;
+	while (i < field->nb_entries)
+	{
+		if (field->entries[i] >= field->entries[*max])
+			*max = i;
+		else if (field->entries[i] <= field->entries[*min])
+			*min = i;
+		i++;
+	}
+}
+
 int
 count_lines_with_numbers(FILE *file)
 {

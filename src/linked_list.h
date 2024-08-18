@@ -18,10 +18,16 @@ typedef struct List
 
 typedef struct Node
 {
+	int				*indexarray;
+	size_t			array_size;
+	int				index_maxvalue;
+	int				index_minvalue;
+
 	void			*content;
 	size_t			content_size;
 	float			max_val;
 	float			min_val;
+
 	Node			*right;
 	Node			*left;
 	List			*parent;
