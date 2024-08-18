@@ -3,20 +3,23 @@
 
 typedef enum
 {
-	RIGHT,
-	LEFT
+	RIGHT = 0,
+	LEFT = 1
 }DIRECTION;
+
+typedef struct Node Node;
 
 typedef struct Node
 {
-	float	*content;
-	node	*right;
-	node	*left;
-	node	*parent;
+	void	*content;
+	size_t	content_size;
+	Node	*right;
+	Node	*left;
+	Node	*parent;
 }Node;
 
-Node	*create_list(Node **node);
-void	add_node(Node **node);
+void	create_list(Node **node);
+void	add_node(Node **node, DIRECTION direction);
 void	remove_node(Node **node);
 
 #endif //LINKED_LIST_H
