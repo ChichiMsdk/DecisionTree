@@ -22,7 +22,7 @@ typedef struct data_set
 	size_t	lines;
 }data_set;
 
-void		get_min_max_valuef(float *max, float *min, fields *field);
+void		ds_get_min_max_valuef(float *max, float *min, fields *field);
 int			count_lines_with_numbers(FILE *file);
 data_set	allocate_struct(data_set ds);
 data_set	load_dataset_csv(const char *fname);

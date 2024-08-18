@@ -8,18 +8,27 @@ typedef enum
 }DIRECTION;
 
 typedef struct Node Node;
+typedef struct data_set data_set;
+
+typedef struct List
+{
+	Node			*head;
+	data_set		*ds;
+}List;
 
 typedef struct Node
 {
-	void	*content;
-	size_t	content_size;
-	Node	*right;
-	Node	*left;
-	Node	*parent;
+	void			*content;
+	size_t			content_size;
+	float			max_val;
+	float			min_val;
+	Node			*right;
+	Node			*left;
+	List			*parent;
 }Node;
 
-void	create_list(Node **node);
-void	add_node(Node **node, DIRECTION direction);
-void	remove_node(Node **node);
+void				create_list(Node **node);
+void				add_node(Node **node, DIRECTION direction);
+void				remove_node(Node **node);
 
 #endif //LINKED_LIST_H

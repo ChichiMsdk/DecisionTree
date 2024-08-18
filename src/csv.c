@@ -2,7 +2,7 @@
 
 
 void
-get_min_max_valuef(float *max, float *min, fields *field)
+ds_get_min_max_valuef(float *max, float *min, fields *field)
 {
 	int i = 0;
 	*max = field->entries[0];
