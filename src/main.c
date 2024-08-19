@@ -24,10 +24,12 @@
 
 #endif // WIN_32
 
+// todo: stop when one type left -> if feature[5] is unique
+// todo: print(depth)
 // todo: find a reliable way to track allocations
-// todo: separate nodes
-// todo: random number
 // todo: get median, average, etc..
+// done: separate nodes
+// done: random number
 
 extern data_set g_ds;
 data_set g_ds;
@@ -38,12 +40,31 @@ data_set g_ds;
 #define RAW(random_feature, indexarray, i) \
 	(g_ds.fields[(random_feature)].entries[(indexarray)[(i)]])
 
+void
+preorder_traversal(Node* node, const char *dir) 
+{
+	if (!node)
+		return ;
+    printf("%s: size: %zu\n", dir, node->array_size);
+    preorder_traversal(node->left, "left");
+    preorder_traversal(node->right, "right");
+}
+
+void
+inorder_traversal(Node* node, const char *dir) 
+{
+	if (!node)
+		return ;
+    inorder_traversal(node->left, "left");
+    printf("%s: size: %zu\n", dir, node->array_size);
+    inorder_traversal(node->right, "right");
+}
 
 void fill_head(Node **node, size_t size);
 void array_min_max_index(int *array, size_t size, int *max, int *min);
 void add_target_to_node(Node **node, data_set *ds, const char *field_name);
 void separate_nodes(Node **node);
-
+void postorder_traversal(Node *node, const char *dir);
 
 int
 main(int ac, char *av[])
@@ -75,7 +96,14 @@ main(int ac, char *av[])
 	/* add_target_to_node(&node, &g_ds, "target"); */
 	fill_head(&node, g_ds.lines);
 	separate_nodes(&node);
-
+	printf("postorder\n");
+	postorder_traversal(node, "root");
+	printf("---------------\n");
+	printf("inorder\n");
+	inorder_traversal(node, "root");
+	printf("---------------\n");
+	printf("preorder\n");
+	preorder_traversal(node, "root");
 	// needs to free nodes
 	destroy_dataset(g_ds);
 	return 0;
@@ -159,8 +187,10 @@ separate_nodes(Node **node)
 	int *r_indexarray = right_node->indexarray;
 	const int *c_indexarray = c_node->indexarray;
 
-	printf("random_conditon %f\n", random_condition);
-	printf("random_feat %d\n", rfeat);
+    /*
+	 * printf("random_conditon %f\n", random_condition);
+	 * printf("random_feat %d\n", rfeat);
+     */
 	/* printf("cnode->array_size: %llu\n", c_node->array_size); */
 
 	// right node >= condition && left node <= condition
@@ -245,9 +275,19 @@ separate_nodes(Node **node)
 	left_node->array_size = j;
 	// should not be needed
 	left_node->indexarray = l_indexarray;
-	printf("lnode: %zu\t rnode: %llu\n", j, right_node->array_size);
+	/* printf("lnode: %zu\t rnode: %llu\n", j, right_node->array_size); */
 	depth++;
 	separate_nodes(&left_node);
+}
+
+void
+postorder_traversal(Node* node, const char *dir) 
+{
+	if (!node)
+		return ;
+    postorder_traversal(node->left, "left");
+    postorder_traversal(node->right, "right");
+    printf("%s: size: %zu\n", dir, node->array_size);
 }
 
 /*
