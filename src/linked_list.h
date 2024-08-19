@@ -1,6 +1,8 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
+#include <stddef.h>
+
 typedef enum
 {
 	RIGHT = 0,
@@ -9,6 +11,15 @@ typedef enum
 
 typedef struct Node Node;
 typedef struct data_set data_set;
+
+typedef struct NodeArray
+{
+	Node			**array;
+	size_t			nb_elem;
+	size_t			max_elem;
+
+	int				depth;
+}NodeArray;
 
 typedef struct List
 {
@@ -30,6 +41,7 @@ typedef struct Node
 
 	Node			*right;
 	Node			*left;
+	Node			*prev;
 	List			*parent;
 }Node;
 

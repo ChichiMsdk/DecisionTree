@@ -1,10 +1,10 @@
+#include "utils.h"
 #include "csv.h"
-#include "linked_list.h"
 
+#include <assert.h>
 #include <time.h>
 #include <string.h> // strcmp()
 #include <math.h> // fmod()
-
 
 #ifdef WIN_32
 /*
@@ -41,30 +41,78 @@ data_set g_ds;
 	(g_ds.fields[(random_feature)].entries[(indexarray)[(i)]])
 
 void
-preorder_traversal(Node* node, const char *dir) 
+print_tree(Node *node, int a)
 {
 	if (!node)
 		return ;
-    printf("%s: size: %zu\n", dir, node->array_size);
-    preorder_traversal(node->left, "left");
-    preorder_traversal(node->right, "right");
+	printf("%d: size: %zu\n", a, node->array_size);
+	print_tree(node->left, 0);
+	print_tree(node->right, 1);
+}
+
+const char *__asan_default_options() { return "detect_leaks=0"; }
+
+int 
+max_depth(Node* node)
+{
+	if (node == NULL)
+		return 0;
+	else 
+	{
+		/* compute the depth of each subtree */
+		int lDepth = max_depth(node->left);
+		int rDepth = max_depth(node->right);
+
+		/* use the larger one */
+		if (lDepth > rDepth)
+			return (lDepth + 1);
+		else
+			return (rDepth + 1);
+	}
 }
 
 void
-inorder_traversal(Node* node, const char *dir) 
+append_node_array(Node **node_array, size_t *nb_elem, int max_elem, Node *node)
 {
-	if (!node)
-		return ;
-    inorder_traversal(node->left, "left");
-    printf("%s: size: %zu\n", dir, node->array_size);
-    inorder_traversal(node->right, "right");
+	assert(*nb_elem < max_elem && *nb_elem >= 0);
+	node_array[(*nb_elem)] = node;
+	(*nb_elem)++;
 }
 
-void fill_head(Node **node, size_t size);
-void array_min_max_index(int *array, size_t size, int *max, int *min);
-void add_target_to_node(Node **node, data_set *ds, const char *field_name);
-void separate_nodes(Node **node);
-void postorder_traversal(Node *node, const char *dir);
+void
+postorder_append(Node *node, NodeArray *narray, int depth)
+{
+	if (!node)
+		return;
+	postorder_append(node->right, narray, depth + 1);
+	postorder_append(node->left, narray, depth + 1);
+	append_node_array(narray[depth].array, &narray[depth].nb_elem, narray[depth].max_elem, node);
+}
+
+void
+fill_level_array(NodeArray *narray, Node *node)
+{
+	int depth = max_depth(node);
+	postorder_append(node, narray, 0);
+}
+
+NodeArray *
+create_level_array(Node *node)
+{
+	int depth = max_depth(node);
+	NodeArray *tree_array = malloc(sizeof(NodeArray) * depth);
+	/* Node ***tree_array = malloc(sizeof(Node **) * depth); */
+	int i = 0;
+	while (i < depth)
+	{
+		tree_array[i].array = malloc(sizeof(Node*) * pow(2, i));
+		tree_array[i].depth = depth;
+		tree_array[i].max_elem = pow(2, i);
+		tree_array[i].nb_elem = 0;
+		i++;
+	}
+	return tree_array;
+}
 
 int
 main(int ac, char *av[])
@@ -96,50 +144,43 @@ main(int ac, char *av[])
 	/* add_target_to_node(&node, &g_ds, "target"); */
 	fill_head(&node, g_ds.lines);
 	separate_nodes(&node);
-	printf("postorder\n");
-	postorder_traversal(node, "root");
-	printf("---------------\n");
-	printf("inorder\n");
-	inorder_traversal(node, "root");
-	printf("---------------\n");
-	printf("preorder\n");
-	preorder_traversal(node, "root");
+	printf("depth: %d\n", max_depth(node));
+	NodeArray *narray = create_level_array(node);
+	fill_level_array(narray, node);
+	for (int i = 0; i < narray[0].depth; i++)
+	{
+		for(int j = 0; j < narray[i].nb_elem; j++)
+		{
+			Node *tmp = narray[i].array[j];
+			printf("%zu\t", tmp->array_size);
+		}
+		printf("\n");
+	}
+    /*
+	 * printf("postorder\n");
+	 * postorder_traversal(node, "root");
+	 * printf("---------------\n");
+	 * printf("inorder\n");
+	 * inorder_traversal(node, "root");
+	 * printf("---------------\n");
+	 * printf("preorder\n");
+	 * preorder_traversal(node, "root");
+     */
+
 	// needs to free nodes
 	destroy_dataset(g_ds);
 	return 0;
 }
 
-/*
- * Sets the whole dataset indexes to the array
- * along with the indexes of max and min value
- * and its array total size
- */
-void
-fill_head(Node **node, size_t size)
-{
-	int i = 0;
-	(*node)->indexarray = malloc(sizeof(int) * size);
-	(*node)->index_maxvalue = 0;
-	(*node)->index_minvalue = 0;
-	while (i < size)
-	{
-		if ((*node)->indexarray[i] >= (*node)->indexarray[(*node)->index_maxvalue])
-			(*node)->index_maxvalue = i;
-		if ((*node)->indexarray[i] <= (*node)->indexarray[(*node)->index_minvalue])
-			(*node)->index_minvalue = i;
-		(*node)->indexarray[i] = i;
-		i++;
-	}
-	(*node)->array_size = i;
-}
-
-inline float get_random_condition(data_set ds, int feature, Node *node);
-
 void
 separate_nodes(Node **node)
 {
 	static int depth = 0;
-	if (depth >= 5 || (*node)->array_size <= 1)
+	depth++;
+	/* printf("depth: %d\n", depth); */
+	// condition -> more than one "type"
+	/* if (depth >= 10 || (*node)->array_size <= 1) */
+	if (depth >= 40 || (*node)->array_size <= 1 || (is_unique(g_ds, (*node)->indexarray, (*node)->array_size)) == true)
 		return ;
 	/*
 	 * todo: check if we should separate them size > 1 -> needed for recursive way
@@ -161,6 +202,8 @@ separate_nodes(Node **node)
 	Node *right_node = (*node)->right;
 	Node *left_node = (*node)->left;
 	Node *c_node = (*node);
+	(*node)->right->prev = (*node);
+	(*node)->left->prev = (*node);
 
 	// always right_node first
 	// allocate memory based on size of this node's content
@@ -278,64 +321,4 @@ separate_nodes(Node **node)
 	/* printf("lnode: %zu\t rnode: %llu\n", j, right_node->array_size); */
 	depth++;
 	separate_nodes(&left_node);
-}
-
-void
-postorder_traversal(Node* node, const char *dir) 
-{
-	if (!node)
-		return ;
-    postorder_traversal(node->left, "left");
-    postorder_traversal(node->right, "right");
-    printf("%s: size: %zu\n", dir, node->array_size);
-}
-
-/*
- * Requires node->max_val and min to be set
- */
-inline float
-get_random_condition(data_set ds, int feature, Node *node)
-{
-	float f1 = ds.fields[feature].entries[node->index_minvalue];
-	// %
-	float f2 = (ds.fields[feature].entries[node->index_maxvalue] 
-			- ds.fields[feature].entries[node->index_minvalue] + 1);
-
-	int random_condition = fmodf(rand(), f2) + f1;
-
-	return random_condition;
-}
-
-void
-add_target_to_node(Node **node, data_set *ds, const char *field_name)
-{
-	int i = 0;
-	while (i < 5)
-	{
-		if (strcmp(field_name, ds->fields[i].header) == 0)
-		{
-			printf("Found \"%s\" in the data_set\n", field_name);
-			(*node)->content = ds->fields[i].entries;
-			(*node)->content_size = ds->fields[i].nb_entries;
-			return;
-		}
-		i++;
-	}
-	fprintf(stderr, "Could not find the target: \"%s\"\n", field_name);
-}
-
-void
-array_min_max_index(int *array, size_t size, int *max, int *min)
-{
-	size_t i = 0;
-	*max = array[0];
-	*min = *max;
-	while (i < size)
-	{
-		if (array[i] >= array[*max])
-			*max = i;
-		else if (array[i] <= array[*min])
-			*min = i;
-		i++;
-	}
 }
